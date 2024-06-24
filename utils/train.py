@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import time
 
 
-def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader = None, num_epochs=5, device=None):
+def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader = None, num_epochs=5, device=None, plot=True):
     since = time.time()
 
     if device is None:
@@ -19,14 +19,15 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
     if has_val:
         phases = ['train', "val"] 
         dataloaders = dict(train=train_loader, val=val_loader)
+        
     else:
         phases = ['train'] 
         dataloaders = dict(train=train_loader)
+    history = {phase : dict(loss = [], acc = []) for phase in phases}
 
     # Create a temporary directory to save training checkpoints
     with TemporaryDirectory() as tempdir:
         best_model_params_path = os.path.join(tempdir, 'best_model_params.pt')
-
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
 
@@ -45,7 +46,7 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
                 running_corrects = 0
                 running_n = 0
                 # Iterate over data.
-                pbar = tqdm(dataloaders[phase])
+                pbar = tqdm(dataloaders[phase], leave=False)
                 for inputs, labels in pbar:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
@@ -73,7 +74,9 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
                     scheduler.step()
 
                 epoch_loss = running_loss / running_n
-                epoch_acc = running_corrects.double() / running_n
+                epoch_acc = running_corrects.double().item() / running_n
+                history[phase]['loss'].append(epoch_loss)
+                history[phase]['acc'].append(epoch_acc)
 
                 print(f'{phase} Loss: {epoch_loss:.4f} Acc: {running_corrects}/{running_n} = {epoch_acc:.4f}')
 
@@ -90,4 +93,23 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
 
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path))
-    return model
+
+    if plot:
+        plot_history(history)
+    return model, history
+
+def plot_history(history:dict) -> None:
+    """
+    takes in a history from the train method and plots it
+    """
+    import matplotlib.pyplot as plt
+
+    fig, axs = plt.subplots(2,2,figsize=(12,7))
+    axs = axs.ravel()
+    i = 0
+    for phase, metrics in history.items():
+        for metric, vals in metrics.items():
+            axs[i].plot(vals)
+            axs[i].set_title(f'{phase}: {metric}')
+            i+=1
+    plt.show()
