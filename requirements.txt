@@ -2,5 +2,6 @@ jupyter
 matplotlib
 pandas
 numpy
+timm
 torch-lr-finder
 tqdm
