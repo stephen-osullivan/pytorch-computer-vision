@@ -7,7 +7,7 @@ import os
 face_cascade = cv2.CascadeClassifier('opencv/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('opencv/haarcascade_eye.xml')
 
-video_feed = os.environ.get('DROIDCAM_URL', 0) # using droidcam on phone, use 0 for webcam on windows
+video_feed = os.environ.get('DROIDCAM_URL', "http://172.16.3.78:4747/video") # using droidcam on phone, use 0 for webcam on windows
 cap = cv2.VideoCapture(video_feed) 
 if not cap.isOpened:
     print('--(!)Error opening video capture')

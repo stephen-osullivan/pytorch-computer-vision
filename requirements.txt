@@ -5,3 +5,4 @@ numpy
 timm
 torch-lr-finder
 tqdm
+ultralytics

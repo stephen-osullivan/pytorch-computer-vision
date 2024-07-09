@@ -6,7 +6,17 @@ from tempfile import TemporaryDirectory
 import time
 
 
-def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader = None, num_epochs=5, device=None, plot=True):
+def train_model(
+        model : torch.nn.Module, 
+        criterion, 
+        optimizer, 
+        scheduler, 
+        train_loader,
+        val_loader = None, 
+        num_epochs=5,
+        device=None, 
+        plot=True):
+    
     since = time.time()
 
     if device is None:
@@ -42,9 +52,7 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
                 else:
                     model.eval()   # Set model to evaluate mode
 
-                running_loss = 0.0
-                running_corrects = 0
-                running_n = 0
+                running_loss, running_corrects, running_n = 0.0, 0, 0
                 # Iterate over data.
                 pbar = tqdm(dataloaders[phase], leave=False)
                 for inputs, labels in pbar:
@@ -70,7 +78,9 @@ def train_model(model, criterion, optimizer, scheduler, train_loader, val_loader
                     running_loss += loss.item() * len(inputs)
                     running_corrects += torch.sum(preds == labels.data)
                     running_n += len(labels)
+
                 if phase == 'train':
+                    # step learning rate
                     scheduler.step()
 
                 epoch_loss = running_loss / running_n

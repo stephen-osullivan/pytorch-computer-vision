@@ -1,5 +1,9 @@
 # data
 data/*
+opencv/*
+
+# models 
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
